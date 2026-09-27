@@ -1,0 +1,33 @@
+{
+    "ROS2.distro": "jazzy",
+    "python.autoComplete.extraPaths": [
+        "/home/ankur-95/hand_ws/src/install/hand_control/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/src/install/dexhand_gesture_controller/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/src/install/dexhand_description/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/build/dexhand_gesture_controller",
+        "/home/ankur-95/hand_ws/install/dexhand_gesture_controller/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/build/dexhand_description",
+        "/home/ankur-95/hand_ws/install/dexhand_description/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/opt/gz_sim_vendor/lib/python",
+        "/opt/ros/jazzy/opt/sdformat_vendor/lib/python",
+        "/opt/ros/jazzy/opt/gz_transport_vendor/lib/python",
+        "/opt/ros/jazzy/opt/gz_msgs_vendor/lib/python",
+        "/opt/ros/jazzy/opt/gz_math_vendor/lib/python",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/ankur-95/hand_ws/src/install/hand_control/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/src/install/dexhand_gesture_controller/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/src/install/dexhand_description/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/build/dexhand_gesture_controller",
+        "/home/ankur-95/hand_ws/install/dexhand_gesture_controller/lib/python3.12/site-packages",
+        "/home/ankur-95/hand_ws/build/dexhand_description",
+        "/home/ankur-95/hand_ws/install/dexhand_description/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/opt/gz_sim_vendor/lib/python",
+        "/opt/ros/jazzy/opt/sdformat_vendor/lib/python",
+        "/opt/ros/jazzy/opt/gz_transport_vendor/lib/python",
+        "/opt/ros/jazzy/opt/gz_msgs_vendor/lib/python",
+        "/opt/ros/jazzy/opt/gz_math_vendor/lib/python",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ]
+}
