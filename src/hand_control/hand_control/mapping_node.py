@@ -8,42 +8,53 @@ import math
 
 class MappingNode(Node):
     def __init__(self):
-        super().__init__('mapping_node')
+        super().__init__('mapping_node') # Initialize the ROS2 node with the name 'mapping_node'.
         self.subscription = self.create_subscription(
             Float32MultiArray, '/hand_landmarks', self.landmark_callback, 10)
+        # This line here creates a subscription to the topic '/hand_landmarks'  with message type and queue size(10). 
+        # The callback function landmark_callback will be called whenever a new message is received on this topic.
         self.publisher = self.create_publisher(JointState, '/joint_states', 10)
+        # Creates a publisher that will publish messages of type JointState to the topic '/joint_states' with a queue size of 10.
+        
+        # Creates a list containing the names of your robot-hand joints.
         self.joint_names = [
-            'thumb_pitch', 'thumb_knuckle', 'thumb_tip',
-            'index_pitch', 'index_knuckle', 'index_tip',
-            'middle_pitch', 'middle_knuckle', 'middle_tip',
-            'ring_pitch', 'ring_knuckle', 'ring_tip',
-            'pinky_pitch', 'pinky_knuckle', 'pinky_tip',
-            'thumb_yaw', 'index_yaw', 'middle_yaw', 'ring_yaw', 'pinky_yaw',
-            'wrist_pitch_lower', 'wrist_pitch_upper', 'wrist_yaw', 'thumb_roll'
+            'thumb_pitch', 'thumb_knuckle', 'thumb_tip', # 3 joints for the thumb
+            'index_pitch', 'index_knuckle', 'index_tip', # 3 joints for the index finger
+            'middle_pitch', 'middle_knuckle', 'middle_tip', # ==
+            'ring_pitch', 'ring_knuckle', 'ring_tip',# ==
+            'pinky_pitch', 'pinky_knuckle', 'pinky_tip',# ==
+            'thumb_yaw', 'index_yaw', 'middle_yaw', 'ring_yaw', 'pinky_yaw',# 5 joints for yaw movements of each finger
+            'wrist_pitch_lower', 'wrist_pitch_upper', 'wrist_yaw', 'thumb_roll' # 4 joints for wrist and thumb roll movements
         ]
-        self.alpha = 0.3
-        self.smoothed_positions = None
-        self.get_logger().info('Mapping Node started!')
+        self.alpha = 0.3 # This is exponential smoothing factor for joint positions. Decides how much weight to give to new positions vs previous positions. here 0.3 means 30% weight to new positions and 70% to previous positions.
+        # Increasing alpha makes the system more responsive to changes in hand position, while decreasing it makes the system smoother and less sensitive to noise. 
+        # To lesser the jitter, you can decrease alpha, but it will also make the system less responsive to rapid changes in hand position.
+        self.smoothed_positions = None # will hold the smoothed joint positions, initialized to None, meaning there will be no previously held positions.
+        self.get_logger().info('Mapping Node started!')# log msg.
 
-    def get_landmark(self, landmarks, index):
-        i = index * 3
-        return np.array([landmarks[i], landmarks[i+1], landmarks[i+2]])
 
-    def angle_between(self, a, b, c):
-        ba = a - b
+    # The following function retrieves landmark from available landmarks based on the index provided.
+    def get_landmark(self, landmarks, index): # Here self is that particular instance of the class, landmarks is the list of landmarks received from the hand tracking node and index is the index of the landmark we want to retrieve. 
+        i = index * 3 # Since each landmark occupies three positions.
+        return np.array([landmarks[i], landmarks[i+1], landmarks[i+2]]) # Returns a array containing the x, y, z coordinates of the specified landmark.
+
+    # Function for calculating angle between three points. 
+    def angle_between(self, a, b, c): # Here a, b, c are the three points in 3D space represented as numpy arrays. The function calculates the angle at point b formed by the line segments ab and bc.
+        ba = a - b 
         bc = c - b
-        cosine = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc) + 1e-6)
-        cosine = np.clip(cosine, -1.0, 1.0)
-        return math.acos(cosine)
+        cosine = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc) + 1e-6) # Calculating the cosine of the angle using dot product formula. 
+        cosine = np.clip(cosine, -1.0, 1.0) #Clipping the cosine value to be in the range (-1, 1) to avoid numerical errors that might cause the arccos function to return NaN.
+        return math.acos(cosine) # Returning the angle in radians by taking the arccosine of the cosine value, for the ease of use in further calculations, as angles in radians are often more convenient in mathematical computations.
 
-    def finger_angles(self, landmarks, p1, p2, p3, p4):
-        a = self.get_landmark(landmarks, p1)
-        b = self.get_landmark(landmarks, p2)
+    # The following function calculates the angles for a finger based on the landmarks of its joints. 
+    def finger_angles(self, landmarks, p1, p2, p3, p4): # Here self is the instance of the class, landmarks is the list of landmarks received from the hand tracking node, and p1, p2, p3, p4 are the indices of the landmarks corresponding to the joints of a finger. 
+        a = self.get_landmark(landmarks, p1) # Retrieves the coordinates of the first joint of the finger using the get_landmark function.
+        b = self.get_landmark(landmarks, p2) # Retrieves the coordinates of the second joint of the finger.
         c = self.get_landmark(landmarks, p3)
         d = self.get_landmark(landmarks, p4)
-        pitch   = max(0.0, math.pi - self.angle_between(a, b, c))
-        knuckle = max(0.0, math.pi - self.angle_between(b, c, d))
-        tip     = max(0.0, math.pi - (knuckle * 0.7))
+        pitch   = max(0.0, math.pi - self.angle_between(a, b, c)) # Calculating pitch angle at b joint. And it is being substracted from pi to get actual bend angle rather than the angle between the segments.
+        knuckle = max(0.0, math.pi - self.angle_between(b, c, d)) # Same for knuckle angle.
+        tip     = max(0.0, math.pi - (knuckle * 0.7)) # Calculating tip angle based on the knuckle angle. Instead of calculating tip angle directly we are estimating it as a fraction of knuckle angle.
         return pitch, knuckle, tip
 
     def landmark_callback(self, msg):
