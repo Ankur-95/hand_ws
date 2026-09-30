@@ -61,39 +61,41 @@ class MappingNode(Node):
         landmarks = msg.data
         if len(landmarks) != 63:
             return
-        thumb_p,  thumb_k,  thumb_t  = self.finger_angles(landmarks, 0, 1, 2, 3)
+        thumb_p,  thumb_k,  thumb_t  = self.finger_angles(landmarks, 0, 1, 2, 3) # Allocating the angles for each finger by calling the finger angle function with the appropriate landmark indices for each finger.
         index_p,  index_k,  index_t  = self.finger_angles(landmarks, 5, 6, 7, 8)
         middle_p, middle_k, middle_t = self.finger_angles(landmarks, 9, 10, 11, 12)
         ring_p,   ring_k,   ring_t   = self.finger_angles(landmarks, 13, 14, 15, 16)
         pinky_p,  pinky_k,  pinky_t  = self.finger_angles(landmarks, 17, 18, 19, 20)
-        raw_positions = [
+        raw_positions = [ # This is the list of joint positions that will be published to the /joint_states topic. It contains the calculated angles for each finger and some additional joints (like wrist and thumb roll) which are set to 0.0 for now.
             thumb_p, thumb_k, thumb_t,
             index_p, index_k, index_t,
             middle_p, middle_k, middle_t,
             ring_p, ring_k, ring_t,
             pinky_p, pinky_k, pinky_t,
-            0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, # These are placeholders for the yaw movements of each finger, which are not being calculated in this implementation.
             0.0, 0.0, 0.0, 0.0
         ]
-        if self.smoothed_positions is None:
-            self.smoothed_positions = raw_positions
+        if self.smoothed_positions is None: # If this is the first time we are receiving joint positions, we initialize the smoothed_positions with the raw_positions. This is necessary because we need a previous position to apply exponential smoothing.
+            self.smoothed_positions = raw_positions # For the first message, there is no previous value to smooth hence we will be using raw values as it is.
         else:
-            self.smoothed_positions = [
+            self.smoothed_positions = [ # This is where the exponential smoothing is applied. Alpha is already defined in the constructor.
                 self.alpha * r + (1 - self.alpha) * s
                 for r, s in zip(raw_positions, self.smoothed_positions)
             ]
-        joint_msg = JointState()
-        joint_msg.header.stamp = self.get_clock().now().to_msg()
-        joint_msg.name = self.joint_names
-        joint_msg.position = self.smoothed_positions
-        self.publisher.publish(joint_msg)
+        joint_msg = JointState() # Creates an empty ROS JointState message.
+        joint_msg.header.stamp = self.get_clock().now().to_msg() # Sets the timestamp of the message to the current time. This is important for synchronizing data in ROS.
+        joint_msg.name = self.joint_names # Sets the names of the joints in the message to the list of joint names defined in the constructor.
+        joint_msg.position = self.smoothed_positions # Sets the positions of the joints in the message to the smoothed joint positions calculated earlier.
+        self.publisher.publish(joint_msg) # Publishes the JointState message to the /joint_states topic, which can be used by other nodes in the ROS2 system to control the robot hand or for visualization purposes.
 
+
+# Entry point of your ROS Python program.
 def main(args=None):
     rclpy.init(args=args)
     node = MappingNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    rclpy.spin(node) 
+    node.destroy_node() #Cleans up the ROS node when the program exits.
+    rclpy.shutdown()# Shuts down the ROS 2 Python client.
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__main__': # This line checks if the script is being run directly (as opposed to being imported as a module in another script). If it is, it calls the main() function to start the ROS2 node. 
+    main() 
