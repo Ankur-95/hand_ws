@@ -33,7 +33,7 @@ class MappingNode(Node):
         self.get_logger().info('Mapping Node started!')# log msg.
 
 
-    # The following function retrieves landmark from available landmarks based on the index provided.
+    # The following function retrieves landmark from available landmarks based on the index provided. As a 3d point in space.
     def get_landmark(self, landmarks, index): # Here self is that particular instance of the class, landmarks is the list of landmarks received from the hand tracking node and index is the index of the landmark we want to retrieve. 
         i = index * 3 # Since each landmark occupies three positions.
         return np.array([landmarks[i], landmarks[i+1], landmarks[i+2]]) # Returns a array containing the x, y, z coordinates of the specified landmark.
