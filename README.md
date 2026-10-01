@@ -92,6 +92,12 @@ ros2 run hand_control mapping_node
 ---
 
 
+## Demonstration
+
+Image1 showcasing all the parameters(as in commands, topics running, nodes active etc) can be found [here](data/img1.png)  
+Image2 gives understanding of how does layout looks which can be found [here](data/img2.png)  
+And videofeed (offco its me🙂‍↔️..) is [here](data/Vid1.webm)
+
 
 ### By
 Ankur Rakesh Ujawane   
